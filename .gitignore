@@ -1,0 +1,10 @@
+# Compiler
+bin/
+
+# Old project
+main_projeto_1.py
+
+# Code::Blocks files
+projeto_2_periodo.depend
+projeto_2_periodo.layout
+projeto_2_periodo.cbp
