@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <curses.h>
+#include <math.h>
 
 // TODO:
 
@@ -13,32 +14,42 @@ void player_draw(int y, int x, int direction);
 
 void player_walk(int direction_array[], int key);
 
-// util
+int* player_use(int* direction);
+// MENU
+char menu(char escolha);
 
 int main(int argc, char** argv){
-
     int key = 0;
+
+    int enemies_m1[4][2] = {{5, 7}, {21, 8}, {16, 116}, {23, 82}};
+    int enemies_m2[3][2] = {{25, 51}, {23, 21}, {8, 11}};
 
     int player_direction[3];
     player_direction[0] = 5; // y
     player_direction[1] = 5; // x
     player_direction[2] = 1; // orientação
 
+    int y_max, x_max;
+    char* texto = "CUSTOMIZAR";
+    y_max = (int) floor(LINES/2);
+    x_max = (int) floor(COLS/2 - sizeof(texto));
+
+    char escolha_menu = 0;
+    escolha_menu = menu(escolha_menu);
+    //usar escolha_menu para decidir mapa
+
     initscr();
     curs_set(0);
     keypad(stdscr, 1);
     clear();
 
+    //skip colors
 
-    player_draw(player_direction[0], player_direction[1], player_direction[2]);
-    refresh();
-    key = getch();
-    clear();
-    player_walk(player_direction, key);
-    player_draw(player_direction[0], player_direction[1], player_direction[2]);
-    refresh();
-    napms(1000);
-
+    while (1) {
+        key = getch();
+        // desenhar mapa escolhido, etc.
+        clear();
+    }
     getch();
     endwin();
     return 0;
@@ -93,4 +104,87 @@ void player_walk(int direction_array[], int key){
     }
 }
 
-/* (end) funções Player */
+
+int* player_use(int* direction) {
+    int y, x, orientation, coord_y, coord_x;
+    char vis_vertical;
+    char vis_horizontal;
+
+    y = direction[0];
+    x = direction[1];
+    orientation = direction[2];
+
+    switch (orientation) {
+        case (0):
+            coord_y = y - 1;
+            break;
+        case (1):
+            coord_x = x + 1;
+            break;
+        case (2):
+            coord_y = y + 1;
+            break;
+        case (3):
+            coord_x = x - 1;
+            break;
+        default:
+            ;
+    }
+
+    int vis_vertical_coord[2] = {coord_y, x};
+    int vis_horizontal_coord[2] = {y, coord_x};
+    int vis_error[2] = {-1, -1}; /// ERROR VECTOR FOR : player_use()
+
+    vis_horizontal = mvinch(y, coord_x);
+    vis_vertical = mvinch(coord_y, x);
+
+    if (vis_horizontal == ACS_DIAMOND){
+        return vis_horizontal_coord;
+    } else if (vis_vertical == ACS_DIAMOND) {
+        return vis_vertical_coord;
+    } else {
+        return vis_error;
+    }
+}
+
+/* MENU */
+char menu(char escolha){
+    char* arraymenu[] = {"DIGITE O NUMERO", "CORRESPONDENTE", " ", "1. facil", "2. dificil", "3. sair"};
+    int i, j, x, y, x1, y1;
+
+    char* string[] ={" __ __ __ __","|   |   |    __|    |  |   |   |","|       |    |       |   |   |","||||_||__|___|"};
+
+    clear();
+    initscr();
+    curs_set(0);
+    getmaxyx(stdscr, y, x);
+    getmaxyx(stdscr, y1, x1);
+    x = (x - 10) / 2;
+    y = (y - 3) / 2;
+    x1 = (x1 - 26) / 2;
+    y1 = (y1 - 15) / 2;
+
+    for (j = 0; j < 4; j++){
+        mvprintw(y1 + j, x1, "%s", string[j]);
+    }
+
+    for(i = 0; i < 6; i++){
+        refresh();
+        mvprintw(y + i, x, "%s", arraymenu[i]);
+    }
+
+    printw("s\n");
+    escolha = getch();
+
+    if (escolha == '1'){
+        printw("voce selecionou facil");
+    } else if(escolha == '2') {
+        printw("voce selecionou dificil");
+    } else if(escolha == '3'){
+        printw("voce selecionou sair");
+    } else {
+        printw("ERROR 404");
+    }
+
+    return escolha;
+}
