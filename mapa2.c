@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int draw_room_map2(){
+/*
+void draw_room_map2(){
 
     clear();
     initscr();
@@ -60,7 +61,8 @@ int draw_room_map2(){
 
     getch();
 }
-
+*/
+/*
 int main(){
     draw_room_map2();
-}
+}*/

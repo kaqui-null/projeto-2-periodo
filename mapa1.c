@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
 int draw_room_map1(){
 
     clear();
     initscr();
     refresh();
-    
+
     int i,j,k,l,m,y,x;
     int numero_salas = 7;
     int dimensoes_salas[7][2] = {{8,16}, {9,13}, {10,15}, {6,30}, {15,15},{8,23},{8,24}};
@@ -59,7 +60,8 @@ int draw_room_map1(){
 
     getch();
 }
-
+*/
+/*
 int main(){
     draw_room_map1();
-}
+}*/

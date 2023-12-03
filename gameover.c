@@ -1,9 +1,8 @@
 //codigo duvida - cor nao funciona
 #include <curses.h>
+/*
+void game_over(){
 
-int game_over(){
-
-    initscr();
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_RED);
     curs_set(0);
@@ -34,8 +33,9 @@ int game_over(){
         i++;
     }while(i<5);
 
-}
+} */
 
+/*
 int main(){
     game_over();
-}
+}*/
