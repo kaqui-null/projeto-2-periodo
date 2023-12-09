@@ -13,8 +13,6 @@
 // player
 void player_draw(int y, int x, int direction);
 
-void player_walk(int direction_array[], int key);
-
 int* player_use(int* direction);
 
 // MENU
@@ -30,15 +28,18 @@ void draw_room_map2();
 // GAME_OVER
 void game_over();
 
+// UTIL
+char get_char_in_path(int y, int x, int direction);
+
 int main(int argc, char** argv){
     int key = 0;
 
     int enemies_m1[4][2] = {{5, 7}, {21, 8}, {16, 116}, {23, 82}};
     int enemies_m2[3][2] = {{25, 51}, {23, 21}, {8, 11}};
 
+    int colet_map1[7][2] = {{9,19}, {26,18}, {16,123}, {7,67}, {15,32}, {29,37}, {24,90}};
+    int colet_map2[5][2] = {{5,11}, {27, 23}, {14, 123}, {7, 66}, {26, 51}};
     int player_direction[3];
-    player_direction[0] = 5; // y
-    player_direction[1] = 5; // x
     player_direction[2] = 1; // orientação
 
     int y_max, x_max;
@@ -46,30 +47,60 @@ int main(int argc, char** argv){
     y_max = (int) floor(LINES/2);
     x_max = (int) floor(COLS/2 - sizeof(texto));
 
-
     initscr();
     curs_set(0);
     keypad(stdscr, 1);
     clear();
 
+
+    splash_screen();
     napms(500);
     char escolha_menu = 0;
-    escolha_menu = menu(escolha_menu);
-    //usar escolha_menu para decidir mapa
+    escolha_menu = menu(escolha_menu); // char '1', '2' ou '3'
 
-    //skip colors
-    splash_screen();
-    draw_room_map1();
-    draw_room_map2();
+    if (escolha_menu == '1'){
+        player_direction[0] = 5;
+        player_direction[1] = 8;
+    } else if (escolha_menu == '2') {
+        player_direction[0] = 8;
+        player_direction[1] = 15;
+    }
 
     while (1) {
         key = getch();
-        // desenhar mapa escolhido, etc.
-        if (key == 'g') {
-            game_over();
-        }
         clear();
+        refresh();
+
+        if (escolha_menu == '1'){
+            draw_room_map1();
+        } else if (escolha_menu == '2') {
+            draw_room_map2();
+        } else {
+            break;
+        }
+
+        if (key == KEY_LEFT){
+            player_direction[2] = 3;
+            if (get_char_in_path(player_direction[0], player_direction[1], player_direction[2]))
+                player_direction[1] -= 1;
+        } else if (key == KEY_RIGHT) {
+            player_direction[2] = 1;
+            if (get_char_in_path(player_direction[0], player_direction[1], player_direction[2]))
+                player_direction[1] += 1;
+        } else if (key == KEY_UP) {
+            player_direction[2] = 0;
+            if (get_char_in_path(player_direction[0], player_direction[1], player_direction[2]))
+                player_direction[0] -= 1;
+        } else if (key == KEY_DOWN) {
+            player_direction[2] = 2;
+            if (get_char_in_path(player_direction[0], player_direction[1], player_direction[2]))
+                player_direction[0] += 1;
+        }
+
+        player_draw(player_direction[0], player_direction[1], player_direction[2]);
+        refresh();
     }
+
     getch();
     endwin();
     return 0;
@@ -77,7 +108,25 @@ int main(int argc, char** argv){
 
 
 /* Utils */
+char get_char_in_path(int y, int x, int direction) {
+    char on_path = 0;
+    if (direction == 3) {
+        on_path = mvinch(y, x - 1);
+    } else if (direction == 1) {
+        on_path = mvinch(y, x + 1);
+    } else if (direction == 0) {
+        on_path = mvinch(y - 1, x);
+    } else if (direction == 2) {
+        on_path = mvinch(y + 1, x);
+    }
 
+    if (on_path != '*') {
+        return 1;
+    } else {
+        return 0;
+    }
+
+}
 
 /* funções Player */
 
@@ -105,23 +154,6 @@ void player_draw(int y, int x, int direction) {
             mvaddch(y,x, 'E');
     }
 
-}
-
-
-void player_walk(int direction_array[], int key){
-    if (key == KEY_LEFT){
-        direction_array[1] -= 1;
-        direction_array[2] = 3;
-    } else if (key == KEY_RIGHT) {
-        direction_array[1] += 1;
-        direction_array[2] = 1;
-    } else if (key == KEY_UP) {
-        direction_array[0] -= 1;
-        direction_array[2] = 0;
-    } else if (key == KEY_DOWN) {
-        direction_array[0] += 1;
-        direction_array[2] = 2;
-    }
 }
 
 
@@ -172,7 +204,7 @@ char menu(char escolha){
     char* arraymenu[] = {"DIGITE O NUMERO", "CORRESPONDENTE", " ", "1. facil", "2. dificil", "3. sair"};
     int i, j, x, y, x1, y1;
 
-    char* string[] ={" __ __ __ __","|   |   |    __|    |  |   |   |","|       |    |       |   |   |","||||_||__|___|"};
+    char* string[] ={" _______ _______ _______ _______","|   |   |    ___|    |  |   |   |","|       |    ___|       |   |   |","|__|_|__|_______|__|____|_______|"};
 
     clear();
     getmaxyx(stdscr, y, x);
@@ -195,12 +227,16 @@ char menu(char escolha){
     escolha = getch();
 
     if (escolha == '1'){
+        clear();
         printw("voce selecionou facil");
     } else if(escolha == '2') {
+        clear();
         printw("voce selecionou dificil");
     } else if(escolha == '3'){
+        clear();
         printw("voce selecionou sair");
     } else {
+        clear();
         printw("ERROR 404");
     }
 
@@ -269,8 +305,7 @@ void splash_screen(){
 
 /* MAPA1 */
 void draw_room_map1(){
- clear();
-    initscr();
+    clear();
     refresh();
 
     int i,j,k,l,m,y,x;
@@ -320,15 +355,15 @@ void draw_room_map1(){
             mvprintw(y_horizontal,l,"=");
         }
     }
+    refresh();
 
-    getch();
 }
 
 /* MAPA2 */
 void draw_room_map2(){
 
     clear();
-    initscr();
+    refresh();
 
     int i,j,k,l,m,y,x;
     int numero_salas = 5;
@@ -380,7 +415,7 @@ void draw_room_map2(){
         }
     }
 
-    getch();
+    refresh();
 }
 
 /* GAME OVER */
