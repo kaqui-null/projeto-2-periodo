@@ -13,7 +13,7 @@
 // player
 void player_draw(int y, int x, int direction);
 
-int* player_use(int* direction);
+void player_use(int* buff_y, int* buff_x, int y, int x, int orientation);
 
 // MENU
 char menu(char escolha);
@@ -27,19 +27,30 @@ void draw_room_map2();
 
 // GAME_OVER
 void game_over();
+void you_win();
 
 // UTIL
 char get_char_in_path(int y, int x, int direction);
 
 int main(int argc, char** argv){
     int key = 0;
+    int i;
+    int player_score = 0;
 
     int enemies_m1[4][2] = {{5, 7}, {21, 8}, {16, 116}, {23, 82}};
     int enemies_m2[3][2] = {{25, 51}, {23, 21}, {8, 11}};
 
-    int colet_map1[7][2] = {{9,19}, {26,18}, {16,123}, {7,67}, {15,32}, {29,37}, {24,90}};
-    int colet_map2[5][2] = {{5,11}, {27, 23}, {14, 123}, {7, 66}, {26, 51}};
+    /// COLET_MAPX[][] = {{ int y, int x, int colected(true: 1||false: 0)}};
+    int colet_map1[7][3] = {{9,19,0}, {26,18,0}, {16,123,0}, {7,67,0}, {15,32,0}, {29,37,0}, {24,90,0}};
+    int colet_map2[5][3] = {{5,11,0}, {27, 23,0}, {14, 123,0}, {7, 66,0}, {26, 51,0}};
+    int curr_colet[2];
+    int sizeof_colet_map1 = sizeof(colet_map1)/sizeof(int);
+    int sizeof_colet_map2 = sizeof(colet_map2)/sizeof(int);
+    int* curr_colet_ptr = &curr_colet;
+
     int player_direction[3];
+    player_direction[0] = 0;
+    player_direction[1] = 0;
     player_direction[2] = 1; // orientação
 
     int y_max, x_max;
@@ -72,9 +83,27 @@ int main(int argc, char** argv){
         refresh();
 
         if (escolha_menu == '1'){
+            if (player_score == (sizeof_colet_map1 / 3)) {
+                you_win();
+                break;
+            }
             draw_room_map1();
+            for (i = 0; i < 7; i++) {
+                if (colet_map1[i][2] == 0) {
+                    mvaddch(colet_map1[i][0], colet_map1[i][1], ACS_DIAMOND);
+                }
+            }
         } else if (escolha_menu == '2') {
+            if (player_score == (sizeof_colet_map2 / 3)) {
+                you_win();
+                break;
+            }
             draw_room_map2();
+            for (i = 0; i < 5; i++) {
+                if (colet_map2[i][2] == 0) {
+                    mvaddch(colet_map2[i][0], colet_map2[i][1], ACS_DIAMOND);
+                }
+            }
         } else {
             break;
         }
@@ -95,11 +124,37 @@ int main(int argc, char** argv){
             player_direction[2] = 2;
             if (get_char_in_path(player_direction[0], player_direction[1], player_direction[2]))
                 player_direction[0] += 1;
+        } else if (key == 'z') {
+            player_use(curr_colet_ptr, curr_colet_ptr + 1, player_direction[0], player_direction[1], player_direction[2]);
+            if (!(curr_colet[0] == 0 && curr_colet[1] == 0)) {
+                if (escolha_menu == '1') {;
+                    for (i = 0; i < sizeof_colet_map1; i++){
+                        if (curr_colet[0] == colet_map1[i][0] && curr_colet[1] == colet_map1[i][1]) {
+                            if (colet_map1[i][2] == 0) {
+                                player_score = player_score + 1;
+                                colet_map1[i][2] = 1;
+                            }
+                        }
+                    }
+                } else if (escolha_menu == '2') {
+                    for (i = 0; i < sizeof_colet_map2; i++){
+                        if (curr_colet[0] == colet_map2[i][0] && curr_colet[1] == colet_map2[i][1]) {
+                            if (colet_map2[i][2] == 0) {
+                                player_score = player_score + 1;
+                                colet_map2[i][2] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (key == 'q'){
+            break;
         }
 
         player_draw(player_direction[0], player_direction[1], player_direction[2]);
         refresh();
     }
+
 
     getch();
     endwin();
@@ -120,10 +175,12 @@ char get_char_in_path(int y, int x, int direction) {
         on_path = mvinch(y + 1, x);
     }
 
-    if (on_path != '*') {
+    if (on_path == '*') {
+        return 0;
+    } else if (on_path == '|' || on_path == '=') {
         return 1;
     } else {
-        return 0;
+        return 1;
     }
 
 }
@@ -157,45 +214,42 @@ void player_draw(int y, int x, int direction) {
 }
 
 
-int* player_use(int* direction) {
-    int y, x, orientation, coord_y, coord_x;
+void player_use(int* buff_y, int* buff_x, int y, int x, int orientation) {
+    int coord_y, coord_x;
     char vis_vertical;
     char vis_horizontal;
-
-    y = direction[0];
-    x = direction[1];
-    orientation = direction[2];
 
     switch (orientation) {
         case (0):
             coord_y = y - 1;
+            coord_x = x;
             break;
         case (1):
             coord_x = x + 1;
+            coord_y = y;
             break;
         case (2):
             coord_y = y + 1;
+            coord_x = x;
             break;
         case (3):
             coord_x = x - 1;
+            coord_y = y;
             break;
         default:
             ;
     }
 
-    int vis_vertical_coord[2] = {coord_y, x};
-    int vis_horizontal_coord[2] = {y, coord_x};
-    int vis_error[2] = {-1, -1}; /// ERROR VECTOR FOR : player_use()
 
     vis_horizontal = mvinch(y, coord_x);
     vis_vertical = mvinch(coord_y, x);
 
-    if (vis_horizontal == ACS_DIAMOND){
-        return vis_horizontal_coord;
-    } else if (vis_vertical == ACS_DIAMOND) {
-        return vis_vertical_coord;
-    } else {
-        return vis_error;
+    if (vis_horizontal == 96){
+        *buff_y = y;
+        *buff_x = coord_x;
+    } else if (vis_vertical == 96) {
+        *buff_y = coord_y;
+        *buff_x = x;
     }
 }
 
@@ -443,6 +497,40 @@ void game_over(){
 
         attron(COLOR_PAIR(1));
         mvprintw(y,x, "%s", gameOver);
+        attroff(COLOR_PAIR(1));
+
+        refresh();
+        clear();
+        napms(1000);
+        i++;
+    }while(i<5);
+
+}
+
+void you_win(){
+
+    start_color();
+    init_pair(1, COLOR_BLACK, COLOR_GREEN);
+    curs_set(0);
+
+    int i = 0;
+    int y, x;
+
+    char youWin[] = "YOU WIN!!!!";
+    int length = sizeof(youWin) / sizeof(youWin[0]);
+
+    getmaxyx(stdscr,y,x);
+    y = y/2;
+    x = (x-length)/2;
+
+    do {
+
+        refresh();
+        clear();
+        napms(1000);
+
+        attron(COLOR_PAIR(1));
+        mvprintw(y,x, "%s", youWin);
         attroff(COLOR_PAIR(1));
 
         refresh();
