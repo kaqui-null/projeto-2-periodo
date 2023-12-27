@@ -175,12 +175,10 @@ char get_char_in_path(int y, int x, int direction) {
         on_path = mvinch(y + 1, x);
     }
 
-    if (on_path == '*') {
-        return 0;
-    } else if (on_path == '|' || on_path == '=') {
+    if (on_path == '.') {
         return 1;
     } else {
-        return 1;
+        return 0;
     }
 
 }
@@ -282,16 +280,13 @@ char menu(char escolha){
 
     if (escolha == '1'){
         clear();
-        printw("voce selecionou facil");
     } else if(escolha == '2') {
         clear();
-        printw("voce selecionou dificil");
     } else if(escolha == '3'){
         clear();
-        printw("voce selecionou sair");
     } else {
         clear();
-        printw("ERROR 404");
+        printw("ERRO");
     }
 
     return escolha;
@@ -368,6 +363,7 @@ void draw_room_map1(){
 
     int coordenadas_salas[7][2] = {{3,5}, {22,35}, {19,5},{3,65},{13,110}, {9,30},{18,68}};
 
+
     for(i=0;i<numero_salas;i++){
         int altura = dimensoes_salas[i][0];
         int comprimento = dimensoes_salas[i][1];
@@ -376,10 +372,7 @@ void draw_room_map1(){
 
         for(j=0;j<comprimento;j++){
             for(k=0;k<altura;k++){
-                mvprintw(y,x+j, "*");
-                mvprintw(y+k,x, "*");
-                mvprintw(y+altura,x+j, "*");
-                mvprintw(y+k,x+comprimento, "*");
+                mvprintw(y+k,x+j, ".");
             }
         }
     }
@@ -393,7 +386,7 @@ void draw_room_map1(){
         int y_vertical = coordenadas_vertical[i][0];
         int x_vertical = coordenadas_vertical[i][1];
         for(j=y_vertical;j<y_vertical+vertical;j++){
-            mvprintw(j,x_vertical,"||");
+            mvprintw(j,x_vertical,".");
         }
     }
 
@@ -406,7 +399,7 @@ void draw_room_map1(){
         int y_horizontal = coordenadas_horizontal[m][0];
         int x_horizontal = coordenadas_horizontal[m][1];
         for(l=x_horizontal; l<x_horizontal+horizontal;l++){
-            mvprintw(y_horizontal,l,"=");
+            mvprintw(y_horizontal,l,".");
         }
     }
     refresh();
@@ -433,10 +426,7 @@ void draw_room_map2(){
 
         for(j=0;j<comprimento;j++){
             for(k=0;k<altura;k++){
-                mvprintw(y,x+j,"*");
-                mvprintw(y+k,x,"*");
-                mvprintw(y+altura,x+j,"*");
-                mvprintw(y+k,x+comprimento, "*");
+                mvprintw(y+k,x+j,".");
             }
         }
 
@@ -452,7 +442,7 @@ void draw_room_map2(){
         int y_vertical = coordenadas_vertical[i][0];
         int x_vertical = coordenadas_vertical[i][1];
         for(j=y_vertical;j<y_vertical+vertical;j++){
-            mvprintw(j,x_vertical,"||");
+            mvprintw(j,x_vertical,".");
         }
     }
 
@@ -465,7 +455,7 @@ void draw_room_map2(){
         int y_horizontal = coordenadas_horizontal[m][0];
         int x_horizontal = coordenadas_horizontal[m][1];
         for(l=x_horizontal; l<x_horizontal+horizontal;l++){
-            mvprintw(y_horizontal,l,"=");
+            mvprintw(y_horizontal,l,".");
         }
     }
 
