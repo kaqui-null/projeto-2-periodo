@@ -29,16 +29,27 @@ void draw_room_map2();
 void game_over();
 void you_win();
 
+// INIMIGOS
+int check_surrounding(int inimigo[3], int player_pos[3]);
+
 // UTIL
 char get_char_in_path(int y, int x, int direction);
 
 int main(int argc, char** argv){
     int key = 0;
     int i;
-    int player_score = 0;
 
-    int enemies_m1[4][2] = {{5, 7}, {21, 8}, {16, 116}, {23, 82}};
-    int enemies_m2[3][2] = {{25, 51}, {23, 21}, {8, 11}};
+    int player_score = 0;
+    int player_hp = 3;
+    int player_direction[3];
+    player_direction[0] = 0;
+    player_direction[1] = 0;
+    player_direction[2] = 1; // orientação
+
+    // enemies_origin[][]  = {{int y,int x, int hp}}
+    int enemies_origin_m1[4][2] = {{5, 7, 1}, {21, 8, 2}, {16, 116, 1}, {23, 82, 3}};
+    int enemies_origin_m2[3][2] = {{25, 51, 1}, {23, 21, 4}, {8, 11, 1}};
+
 
     /// COLET_MAPX[][] = {{ int y, int x, int colected(true: 1||false: 0)}};
     int colet_map1[7][3] = {{9,19,0}, {26,18,0}, {16,123,0}, {7,67,0}, {15,32,0}, {29,37,0}, {24,90,0}};
@@ -48,10 +59,6 @@ int main(int argc, char** argv){
     int sizeof_colet_map2 = sizeof(colet_map2)/sizeof(int);
     int* curr_colet_ptr = &curr_colet;
 
-    int player_direction[3];
-    player_direction[0] = 0;
-    player_direction[1] = 0;
-    player_direction[2] = 1; // orientação
 
     int y_max, x_max;
     char* texto = "CUSTOMIZAR";
@@ -71,16 +78,22 @@ int main(int argc, char** argv){
 
     if (escolha_menu == '1'){
         player_direction[0] = 5;
-        player_direction[1] = 8;
+        player_direction[1] = 10;
+
     } else if (escolha_menu == '2') {
         player_direction[0] = 8;
         player_direction[1] = 15;
+
     }
 
     while (1) {
-        key = getch();
         clear();
         refresh();
+
+        if (player_hp <= 0) {
+            game_over();
+            break;
+        }
 
         if (escolha_menu == '1'){
             if (player_score == (sizeof_colet_map1 / 3)) {
@@ -88,22 +101,42 @@ int main(int argc, char** argv){
                 break;
             }
             draw_room_map1();
+            refresh();
             for (i = 0; i < 7; i++) {
                 if (colet_map1[i][2] == 0) {
                     mvaddch(colet_map1[i][0], colet_map1[i][1], ACS_DIAMOND);
                 }
             }
+            refresh();
+            for (i = 0; i < 4; i++) {
+                mvaddch(enemies_origin_m1[i][0], enemies_origin_m1[i][1], '@');
+                if (check_surrounding(enemies_origin_m1[i], player_direction)){
+                    player_hp -= 1;
+                }
+            }
+            refresh();
         } else if (escolha_menu == '2') {
             if (player_score == (sizeof_colet_map2 / 3)) {
                 you_win();
                 break;
             }
             draw_room_map2();
+            refresh();
             for (i = 0; i < 5; i++) {
                 if (colet_map2[i][2] == 0) {
                     mvaddch(colet_map2[i][0], colet_map2[i][1], ACS_DIAMOND);
                 }
             }
+            refresh();
+            for (i = 0; i < 3; i++) {
+                if (enemies_origin_m2[2] > 0){
+                    mvaddch(enemies_origin_m2[i][0], enemies_origin_m2[i][1], '@');
+                    if (check_surrounding(enemies_origin_m1[i], player_direction)){
+                        player_hp -= 1;
+                    }
+                }
+            }
+            refresh();
         } else {
             break;
         }
@@ -132,6 +165,7 @@ int main(int argc, char** argv){
                         if (curr_colet[0] == colet_map1[i][0] && curr_colet[1] == colet_map1[i][1]) {
                             if (colet_map1[i][2] == 0) {
                                 player_score = player_score + 1;
+                                player_hp += 1;
                                 colet_map1[i][2] = 1;
                             }
                         }
@@ -141,6 +175,7 @@ int main(int argc, char** argv){
                         if (curr_colet[0] == colet_map2[i][0] && curr_colet[1] == colet_map2[i][1]) {
                             if (colet_map2[i][2] == 0) {
                                 player_score = player_score + 1;
+                                player_hp += 1;
                                 colet_map2[i][2] = 1;
                             }
                         }
@@ -153,10 +188,10 @@ int main(int argc, char** argv){
 
         player_draw(player_direction[0], player_direction[1], player_direction[2]);
         refresh();
+        key = getch();
     }
 
 
-    getch();
     endwin();
     return 0;
 }
@@ -498,7 +533,6 @@ void game_over(){
 }
 
 void you_win(){
-
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_GREEN);
     curs_set(0);
@@ -528,5 +562,19 @@ void you_win(){
         napms(1000);
         i++;
     }while(i<5);
-
 }
+
+/* INIMIGO */
+
+int check_surrounding(int inimigo[3], int player_pos[3]) {
+    int i,j;
+    for (i = inimigo[0] - 1; i <= inimigo[0] + 1; i++) {
+        for (j = inimigo[1] - 1; j <= inimigo[1] + 1; j++) {
+            if (player_pos[0] == i && player_pos[1] == j) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
